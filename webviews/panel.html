@@ -95,7 +95,8 @@
 
     // Add event listener to the Add button
     addBtn.addEventListener( 'click', () => {
-      // Logic to handle adding new translation based on the format you defined
+      matchingRow = '';
+      extractTranslations(matchingRow);
     } );
 
     // Add event listener to the Update button
@@ -125,10 +126,13 @@
 
         if(matchingRow.length > 1) {
             // If multiple matching rows are found, display a message
+            console.log('multiple ', matchingRow);
             showMultipleRowsMessage( matchingRow );
             return;
         }else {
-
+          matchingRow = matchingRow[0];
+          console.log('single ', matchingRow);
+          extractTranslations(matchingRow);
         }
         // Extract translation values for each language from the matching row
         translationValues = extractTranslations( matchingRow );
@@ -146,6 +150,9 @@
     let content = '';
     for (const key in keyValuePairs) {
         if (keyValuePairs.hasOwnProperty(key)) {
+            if(keyValuePairs[key]===undefined) {
+              keyValuePairs[key] = '';
+            }
             content += `<label for="${key}">${key}</label>: `;
             content += `<input type="text" id="${key}" value="${keyValuePairs[key]}" oninput="updateKeyValuePair('${key}', this.value)"><br>`;
         }
@@ -191,7 +198,13 @@ function escapeRegExp(str) {
     newKeyValuePairs[key] = value;
   }
 
+  function escapeQuotes(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+  }
+
  function writeInFile(oldString, newString){
+  console.log('oldString ', oldString);
+  console.log('newString ', newString);
   vscode.postMessage({
         command: 'dataFromPanel',
         payload: {oldString, newString},
@@ -199,12 +212,12 @@ function escapeRegExp(str) {
   const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldString ? newString : sqlLanguageStatements));
   outputDiv.innerHTML = `Translation update successfully`;
  }
-    function extractTranslations(i, row) {
-
+    function extractTranslations(row) {
+      console.log('empty string update: ', row);
       // const inputString = "insert into FUNCTIONTEXT values (1, 'blbClose', 'Lukk', 'Close', 'Close', 'Sulje', 'Luk', 'Stäng', null, 'Schließen', 'Close', null, 'Sluiten', 'Zamknij', 'Fermer');";
       languageString = row;
       const regex = /'[^']*'|[^,()]+/g;
-      const extractedValues = row.match(regex).slice(1); // Ignore the first value (index 0) as it is the whole match
+      const extractedValues = row ? row.match(regex).slice(1) : ''; // Ignore the first value (index 0) as it is the whole match
       const keys = ['FUNCTIONCO', 'TextName', 'Norsk', 'English (US)', 'English', 'Suomalainen(Finland)', 'Dansk', 'Svenska', 'INUSE(MOSTLY NULL)', 'German (Germany)', 'English (Company)', 'QUERY_CHECKSUM', 'Dutch (Netherlands)', 'Polish (Poland)', 'French (France)'];
 
       keyValuePairs = Object.fromEntries(keys.map((key, index) => [key, extractedValues[index]]));
@@ -212,14 +225,12 @@ function escapeRegExp(str) {
       displayKeyValuePairs(keyValuePairs);
     }
 
-    function escapeQuotes(str) {
-    return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
-  }
+    
 
     function showMultipleRowsMessage( matchingRows ) {
       let resultRows = '';
         for(const [index, row] of matchingRows.entries()) {
-           resultRows += `<button id="${index}" onclick="extractTranslations(${index}, '${escapeQuotes(row)}')">${row} </button><br>`;
+           resultRows += `<button id="${index}" onclick="extractTranslations('${escapeQuotes(row)}')">${row} </button><br>`;
         }
         outputDiv.innerHTML = resultRows;
     }
