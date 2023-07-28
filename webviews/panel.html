@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Webview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    .top-menu {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #007ACC;
+      color: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    button:hover {
+      background-color: #005FA3;
+    }
+
+    #output {
+      margin-top: 16px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-menu">
+    <div>
+      <button id="addBtn">Add</button>
+      <button id="updateBtn">Update</button>
+      <button id="deleteBtn">Delete</button>
+    </div>
+
+  </div>
+  <div>
+    <label for="search">Search:</label>
+    <input type="text" id="search" placeholder="Enter TextName to search">
+    <button id="searchBtn">Search</button>
+  </div>
+  <div id="output">
+    <h1>Language SQL Table</h1>
+    <div id="table-container">
+        <!-- The table content will be dynamically populated here using JavaScript -->
+    </div>
+  </div>
+
+  <!-- Your JavaScript logic can go here or you can link an external script file -->
+  <script>
+    const searchInput = document.getElementById( 'search' );
+    const searchBtn = document.getElementById( 'searchBtn' );
+    const addBtn = document.getElementById( 'addBtn' );
+    const updateBtn = document.getElementById( 'updateBtn' );
+    const deleteBtn = document.getElementById( 'deleteBtn' );
+    const outputDiv = document.getElementById( 'output' );
+    let keyValuePairs = {};
+
+    // Add event listener to the Add button
+    addBtn.addEventListener( 'click', () => {
+      // Logic to handle adding new translation based on the format you defined
+    } );
+
+    // Add event listener to the Update button
+    updateBtn.addEventListener( 'click', () => {
+      // Logic to handle updating translation based on the format you defined
+      updateInputString(keyValuePairs);
+    } );
+
+    // Add event listener to the Delete button
+    deleteBtn.addEventListener( 'click', () => {
+      // Logic to handle deleting entry based on the <TextName> value
+    } );
+
+    // Add event listener to the Search button
+    searchBtn.addEventListener( 'click', () => {
+      // Logic to handle searching based on the user input in the search field
+      const searchText = searchInput.value.trim();
+
+      // Logic to search for the <TextName> in the parsed SQL statements
+      matchingRow = findMatchingRows( searchText );
+
+      if ( matchingRow ) {
+        // Clear previous content in the outputDiv
+        outputDiv.innerHTML = '';
+
+        if(matchingRow.length > 1) {
+            // If multiple matching rows are found, display a message
+            showMultipleRowsMessage( matchingRow );
+            return;
+        }else {
+
+        }
+        // Extract translation values for each language from the matching row
+        const translationValues = extractTranslations( matchingRow );
+
+        // Render input elements for each language
+        renderInputs( translationValues );
+      } else {
+        // If no matching row is found, display a message
+        outputDiv.innerHTML = '<p>No matching entry found for the given TextName.</p>';
+      }
+
+    } );
+    function displayKeyValuePairs(keyValuePairs) {
+    let content = '';
+    for (const key in keyValuePairs) {
+        if (keyValuePairs.hasOwnProperty(key)) {
+            content += `<label for="${key}">${key}</label>: `;
+            content += `<input type="text" id="${key}" value="${keyValuePairs[key]}" oninput="updateKeyValuePair('${key}', this.value)"><br>`;
+        }
+    }
+    outputDiv.innerHTML = content;
+}
+  // Function to update the inputString with new input values
+  function updateInputString(keyValuePairs) {
+      for (const key in keyValuePairs) {
+          if (keyValuePairs.hasOwnProperty(key)) {
+              const inputElement = document.getElementById(key);
+              if (inputElement) {
+                  // Update the value in the keyValuePairs object with the new input value
+                  keyValuePairs[key] = inputElement.value;
+              }
+          }
+      }
+
+      // Update the inputString with the new values
+      const updatedValues = Object.values(keyValuePairs);
+      const regex = /'([^']+)'/g;
+      const updatedInputString = inputString.replace(regex, () => `'${updatedValues.shift()}'`);
+
+      // Optionally, update the displayed key-value pairs after the changes
+      // displayKeyValuePairs(keyValuePairs);
+
+      console.log("Updated inputString:", updatedInputString);
+  }
+
+  function updateKeyValuePair(key, value) {
+    keyValuePairs[key] = value;
+  }
+
+    function extractTranslations(i, row) {
+      // outputDiv.innerHTML = `selected row ${i} is ${row}`;
+
+      // const inputString = "insert into FUNCTIONTEXT values (1, 'blbClose', 'Lukk', 'Close', 'Close', 'Sulje', 'Luk', 'Stäng', null, 'Schließen', 'Close', null, 'Sluiten', 'Zamknij', 'Fermer');";
+
+      const regex = /'[^']*'|[^,()]+/g;
+      const extractedValues = row.match(regex).slice(1); // Ignore the first value (index 0) as it is the whole match
+      const keys = ['FUNCTIONCO', 'TextName', 'Norsk', 'English (US)', 'English', 'Suomalainen(Finland)', 'Dansk', 'Svenska', 'INUSE(MOSTLY NULL)', 'German (Germany)', 'English (Company)', 'QUERY_CHECKSUM', 'Dutch (Netherlands)', 'Polish (Poland)', 'French (France)'];
+
+      const keyValuePairs = Object.fromEntries(keys.map((key, index) => [key, extractedValues[index]]));
+      console.log(keyValuePairs);
+      displayKeyValuePairs(keyValuePairs);
+    }
+
+    function escapeQuotes(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+  }
+
+    function showMultipleRowsMessage( matchingRows ) {
+      let resultRows = '';
+        for(const [index, row] of matchingRows.entries()) {
+           resultRows += `<button id="${index}" onclick="extractTranslations(${index}, '${escapeQuotes(row)}')">${row} </button><br>`;
+        }
+        outputDiv.innerHTML = resultRows;
+    }
+    function findMatchingRows( searchText ) {
+      // Assuming sqlStatements is an array of SQL statements (rows) from the language.sql file
+    // Each SQL statement is represented as an array of values
+
+    const sqlStatements = window.languageSqlContent.match(/insert into FUNCTIONTEXT.*?;/g);
+
+    const rows = [];
+    // Iterate through each SQL statement (row) in the sqlStatements array
+    for (const row of sqlStatements) {
+        if (row.includes('insert into FUNCTIONTEXT') && row.includes(searchText)) {
+            const rowValues = row.split(',');
+            // Assuming the <TextName> is at index 1 in the row array
+            const textName = rowValues[1];
+            // Convert the searchText to lowercase and remove spaces and quotes
+            const processedSearchText = textName.toLowerCase().replace(/[\s'"]/g, '');
+
+            // Compare the <TextName> with the searchText (case-insensitive)
+            if (processedSearchText && processedSearchText.toLowerCase() === searchText.trim().toLowerCase()) {
+                // Return the matching row
+                // console.log("row is ", row)
+                rows.push(row);
+            }
+        }
+    }
+    return rows;
+
+    // If no matching row is found, return null or undefined
+    // return null;
+    }
+
+
+
+    function renderInputs( translationValues ) {
+      // Logic to render input elements for each language and pre-fill the values
+      // Implement the rendering logic here
+      // You can use DOM manipulation or template literals to create the input elements
+      // For example:
+      /*
+      const languages = Object.keys(translationValues);
+      languages.forEach((language) => {
+          const inputValue = translationValues[language];
+          const inputElement = document.createElement('input');
+          inputElement.setAttribute('type', 'text');
+          inputElement.value = inputValue;
+          outputDiv.appendChild(inputElement);
+      });
+      */
+    }
+
+    // You can also add more JavaScript logic here for handling other functionalities
+
+
+    // Receive the content of language.sql from the extension
+    const vscode = acquireVsCodeApi();
+        // Add an event listener to receive messages from the extension
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'languageSqlContent') {
+                const languageSqlContent = event.data.content;
+                window.languageSqlContent = languageSqlContent
+                // showTable(languageSqlContent);
+            }
+        });
+
+        function showTable(content) {
+            const tableHtml = parseLanguageSql(content);
+            document.getElementById("table-container").innerHTML = tableHtml;
+        }
+
+        function parseLanguageSql(content) {
+            // Assuming that the language.sql file has rows in the format:
+            // insert into FUNCTIONTEXT values (..., <TextName>, <Lang1>, <Lang2>, ...);
+            const lines = content.split('\n');
+            const rows = [];
+
+            for (const line of lines) {
+                const matches = line.match(/values \(([^)]+)\);/);
+                if (matches && matches[1]) {
+                    const values = matches[1].split(',').map((value) => value.trim());
+                    rows.push(values);
+                }
+            }
+
+            const languages = rows[0].slice(2); // Extract language names from the first row (excluding <TextName> and FUNCTIONCO)
+            const tableHeaders = languages.map((lang) => `<th>${lang}</th>`).join('');
+            const tableRows = rows.slice(1) // Skip the first row (language names)
+                .map((row) => `<tr>${row.slice(2).map((value) => `<td>${value}</td>`).join('')}</tr>`)
+                .join('');
+
+            return `<table><tr>${tableHeaders}</tr>${tableRows}</table>`;
+        }
+  </script>
+</body>
+
+</html>
