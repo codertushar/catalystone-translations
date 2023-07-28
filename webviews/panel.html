@@ -154,7 +154,7 @@
 }
 
 function escapeRegExp(str) {
-        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');        
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
   // Function to update the inputString with new input values
@@ -190,14 +190,13 @@ function escapeRegExp(str) {
   function updateKeyValuePair(key, value) {
     newKeyValuePairs[key] = value;
   }
-  
- function writeInFile(oldSString, newString){
-  console.log('oldSString', oldSString);
-  console.log('NewString', newString);
-  vscode.postMessage({ type: 'string', value1: oldSString, value2: newString });
-  // console.log('sqlLanguageStatements ', sqlLanguageStatements);
-  const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldSString ? newString : sqlLanguageStatements));
-  // console.log('sqlLanguageStatements ', sqlLanguageStatements);
+
+ function writeInFile(oldString, newString){
+  vscode.postMessage({
+        command: 'dataFromPanel',
+        payload: {oldString, newString},
+      });
+  const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldString ? newString : sqlLanguageStatements));
   outputDiv.innerHTML = `Translation update successfully`;
  }
     function extractTranslations(i, row) {
@@ -229,12 +228,11 @@ function escapeRegExp(str) {
     // Each SQL statement is represented as an array of values
 
     const sqlStatements = window.languageSqlContent.match(/insert into FUNCTIONTEXT.*?;/g);
-    console.log('typeof sqlStatement', typeof(sqlStatements));
     sqlLanguageStatements = sqlStatements;
     const rows = [];
     // Iterate through each SQL statement (row) in the sqlStatements array
     for (const row of sqlStatements) {
-        if (row.includes('insert into FUNCTIONTEXT') && row.includes(searchText)) {
+        if (row.includes(searchText)) {
             const rowValues = row.split(',');
             // Assuming the <TextName> is at index 1 in the row array
             const textName = rowValues[1];

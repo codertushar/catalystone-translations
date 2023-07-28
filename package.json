@@ -1,6 +1,6 @@
 {
   "name": "catalystone-translations",
-  "displayName": "Catalystone Translations",
+  "displayName": "CO LangXpert",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -15,7 +15,7 @@
     "commands": [
       {
         "command": "catalystone-translations.loadTranslations",
-        "title": "Load Translations"
+        "title": "CO LangXpert"
       }
     ]
   },
