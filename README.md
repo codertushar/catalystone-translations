@@ -1,65 +1,46 @@
 # catalystone-translations README
 
-This is the README for your extension "catalystone-translations". After writing up a brief description, we recommend including the following sections.
+Catalystone Translations is a Visual Studio Code (VS Code) extension that provides translation management for your projects. It allows you to work with language translations stored in SQL format and easily update, search, and modify translation entries within the VS Code editor.
 
-## Features
+Features
+--------
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+-   View and manage translations stored in SQL format within VS Code.
+-   Search for specific translations based on the any value.
+-   Update existing translations with new values.
+-   Add new translation entries to the SQL file.
+-   Delete specific translation entries from the SQL file.
 
-For example if there is an image subfolder under your extension project workspace:
+Getting Started
+---------------
 
-\!\[feature X\]\(images/feature-x.png\)
+1.  Installation: Install the Catalystone Translations extension from the VS Code marketplace by searching for "Catalystone Translations" and clicking on "Install."
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+2.  Open Language SQL File: Open your language.sql file in the editor. The extension will automatically detect and parse the SQL statements.
 
-## Requirements
+3.  View Translations: To view all translations in a table format, open the Command Palette (Ctrl/Cmd + Shift + P) and search for "Catalystone Translations: View Translations." This will display a table with all the translations from the language.sql file.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+4.  Search Translations: Use the search functionality by entering a search term in the "Search" input field and clicking the "Search" button. The extension will display matching translations based on the entered search term.
 
-## Extension Settings
+5.  Update Translations: To update a translation, click on the "Update" button, make the necessary changes in the input fields, and then click the "Update" button again to save the changes.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+6.  Add Translations: To add a new translation, click on the "Add" button, enter the required values in the input fields, and then click the "Add" button to create a new translation entry.
 
-For example:
+7.  Delete Translations: To delete a translation, click on the "Delete" button corresponding to the translation you want to remove. Confirm the action, and the entry will be deleted from the SQL file.
 
-This extension contributes the following settings:
+8.  Save Changes: All modifications made through the extension will be automatically saved to the language.sql file.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+Known Issues
+------------
 
-## Known Issues
+Please check the [GitHub repository](https://github.com/codertushar/catalystone-translations) for any known issues or to report new ones.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Contributions
+-------------
 
-## Release Notes
+Contributions are welcome! If you encounter any bugs or have suggestions for new features, feel free to create a pull request or submit an issue on the [GitHub repository](https://github.com/codertushar/catalystone-translations).
 
-Users appreciate release notes as you update your extension.
+License
+-------
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+This extension is released under the [MIT License].
