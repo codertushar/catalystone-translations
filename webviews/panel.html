@@ -87,7 +87,11 @@
     const updateBtn = document.getElementById( 'updateBtn' );
     const deleteBtn = document.getElementById( 'deleteBtn' );
     const outputDiv = document.getElementById( 'output' );
+    let sqlLanguageStatements = null;
+
     let keyValuePairs = {};
+    let newKeyValuePairs = {};
+    let languageString = '';
 
     // Add event listener to the Add button
     addBtn.addEventListener( 'click', () => {
@@ -97,6 +101,8 @@
     // Add event listener to the Update button
     updateBtn.addEventListener( 'click', () => {
       // Logic to handle updating translation based on the format you defined
+      console.log('updatebtn clicked', keyValuePairs);
+      console.log('new updatebtn clicked', newKeyValuePairs);
       updateInputString(keyValuePairs);
     } );
 
@@ -125,7 +131,7 @@
 
         }
         // Extract translation values for each language from the matching row
-        const translationValues = extractTranslations( matchingRow );
+        translationValues = extractTranslations( matchingRow );
 
         // Render input elements for each language
         renderInputs( translationValues );
@@ -135,6 +141,7 @@
       }
 
     } );
+
     function displayKeyValuePairs(keyValuePairs) {
     let content = '';
     for (const key in keyValuePairs) {
@@ -145,43 +152,63 @@
     }
     outputDiv.innerHTML = content;
 }
+
+function escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');        
+    }
+
   // Function to update the inputString with new input values
   function updateInputString(keyValuePairs) {
-      for (const key in keyValuePairs) {
-          if (keyValuePairs.hasOwnProperty(key)) {
-              const inputElement = document.getElementById(key);
-              if (inputElement) {
-                  // Update the value in the keyValuePairs object with the new input value
-                  keyValuePairs[key] = inputElement.value;
-              }
-          }
+
+    console.log("languageString:", languageString);
+    updatedInputString = "insert into FUNCTIONTEXT values ('FUNCTIONCO', 'TextName', 'Norsk', 'English (US)', 'English', 'Suomalainen(Finland)', 'Dansk', 'Svenska', 'INUSE(MOSTLY NULL)', 'German (Germany)', 'English (Company)', 'QUERY_CHECKSUM', 'Dutch (Netherlands)', 'Polish (Poland)', 'French (France)');";
+    // Iterate through the array of new key-value pairs and add them to keyValuePairs object
+    for (const newKey in newKeyValuePairs) {
+        if (newKeyValuePairs.hasOwnProperty(newKey)) {
+            keyValuePairs[newKey] = newKeyValuePairs[newKey];
+        }
+    }
+    console.log("combine keyValuePairs:", keyValuePairs);
+
+
+    for (const key in keyValuePairs) {
+        if (keyValuePairs.hasOwnProperty(key)) {
+            const value = keyValuePairs[key];
+            const valueString = value === null ? 'null' : value.replace(/^\s+|\s+$/g, ''); // Remove leading and trailing spaces from the value
+            const regex = new RegExp("'" + escapeRegExp(key) + "'", "g");
+            updatedInputString = updatedInputString.replace(regex, valueString);
+        }
       }
 
       // Update the inputString with the new values
       const updatedValues = Object.values(keyValuePairs);
-      const regex = /'([^']+)'/g;
-      const updatedInputString = inputString.replace(regex, () => `'${updatedValues.shift()}'`);
 
-      // Optionally, update the displayed key-value pairs after the changes
-      // displayKeyValuePairs(keyValuePairs);
-
-      console.log("Updated inputString:", updatedInputString);
+      console.log("Updated languageString:", updatedInputString);
+      writeInFile(languageString,updatedInputString);
   }
 
   function updateKeyValuePair(key, value) {
-    keyValuePairs[key] = value;
+    newKeyValuePairs[key] = value;
   }
-
+  
+ function writeInFile(oldSString, newString){
+  console.log('oldSString', oldSString);
+  console.log('NewString', newString);
+  vscode.postMessage({ type: 'string', value1: oldSString, value2: newString });
+  // console.log('sqlLanguageStatements ', sqlLanguageStatements);
+  const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldSString ? newString : sqlLanguageStatements));
+  // console.log('sqlLanguageStatements ', sqlLanguageStatements);
+  outputDiv.innerHTML = `Translation update successfully`;
+ }
     function extractTranslations(i, row) {
-      // outputDiv.innerHTML = `selected row ${i} is ${row}`;
 
       // const inputString = "insert into FUNCTIONTEXT values (1, 'blbClose', 'Lukk', 'Close', 'Close', 'Sulje', 'Luk', 'Stäng', null, 'Schließen', 'Close', null, 'Sluiten', 'Zamknij', 'Fermer');";
-
+      languageString = row;
       const regex = /'[^']*'|[^,()]+/g;
       const extractedValues = row.match(regex).slice(1); // Ignore the first value (index 0) as it is the whole match
       const keys = ['FUNCTIONCO', 'TextName', 'Norsk', 'English (US)', 'English', 'Suomalainen(Finland)', 'Dansk', 'Svenska', 'INUSE(MOSTLY NULL)', 'German (Germany)', 'English (Company)', 'QUERY_CHECKSUM', 'Dutch (Netherlands)', 'Polish (Poland)', 'French (France)'];
 
-      const keyValuePairs = Object.fromEntries(keys.map((key, index) => [key, extractedValues[index]]));
+      keyValuePairs = Object.fromEntries(keys.map((key, index) => [key, extractedValues[index]]));
       console.log(keyValuePairs);
       displayKeyValuePairs(keyValuePairs);
     }
@@ -202,7 +229,8 @@
     // Each SQL statement is represented as an array of values
 
     const sqlStatements = window.languageSqlContent.match(/insert into FUNCTIONTEXT.*?;/g);
-
+    console.log('typeof sqlStatement', typeof(sqlStatements));
+    sqlLanguageStatements = sqlStatements;
     const rows = [];
     // Iterate through each SQL statement (row) in the sqlStatements array
     for (const row of sqlStatements) {
@@ -215,8 +243,6 @@
 
             // Compare the <TextName> with the searchText (case-insensitive)
             if (processedSearchText && processedSearchText.toLowerCase() === searchText.trim().toLowerCase()) {
-                // Return the matching row
-                // console.log("row is ", row)
                 rows.push(row);
             }
         }
