@@ -81,7 +81,7 @@
       margin-top: 16px;
     }
 
-    #output input{
+    #output input {
       margin-bottom: 10px;
     }
 
@@ -230,15 +230,15 @@
           keyValuePairs[newKey] = newKeyValuePairs[newKey];
         }
       }
-      for (const key in keyValuePairs) {
-          if (keyValuePairs.hasOwnProperty(key)) {
-              if (keyValuePairs[key] === '') {
-                keyValuePairs[key] = null;
-              }
+      for ( const key in keyValuePairs ) {
+        if ( keyValuePairs.hasOwnProperty( key ) ) {
+          if ( keyValuePairs[key] === '' ) {
+            keyValuePairs[key] = null;
           }
+        }
       }
 
-    console.log("combine keyValuePairs:", keyValuePairs);
+      console.log( "combine keyValuePairs:", keyValuePairs );
       for ( const key in keyValuePairs ) {
         if ( keyValuePairs.hasOwnProperty( key ) ) {
           const value = keyValuePairs[key];
@@ -252,9 +252,9 @@
       const updatedValues = Object.values( keyValuePairs );
 
 
-      console.log("Updated languageString:", updatedInputString);
-      writeInFile(languageString,updatedInputString, 0);
-  }
+      console.log( "Updated languageString:", updatedInputString );
+      writeInFile( languageString, updatedInputString, 0 );
+    }
     function updateKeyValuePair( key, value ) {
       newKeyValuePairs[key] = value;
     }
@@ -264,20 +264,19 @@
     }
 
 
- function writeInFile(oldString, newString, addBit){
-  console.log('oldString ', oldString);
-  console.log('newString ', newString);
-  vscode.postMessage({
+    function writeInFile( oldString, newString, addBit ) {
+      vscode.postMessage( {
         command: 'dataFromPanel',
-        payload: {oldString, newString, addBit},
-      });
-  const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldString ? newString : sqlLanguageStatements));
-  outputDiv.innerHTML = `Translation updated successfully`;
-  updateBtn.style.display = "none";
+        payload: { oldString, newString, addBit },
+      } );
+      sqlLanguageStatements = window.languageSqlContent.match( /insert into FUNCTIONTEXT.*?;/g );
+      const updatedSqlLanguageStatements = sqlLanguageStatements.map( ( sqlLanguageStatements ) => ( sqlLanguageStatements === oldString ? newString : sqlLanguageStatements ) );
+      outputDiv.innerHTML = `Translation updated successfully`;
+      updateBtn.style.display = "none";
 
- }
-    function extractTranslations(row) {
-      console.log('empty string update: ', row);
+    }
+    function extractTranslations( row ) {
+      console.log( 'empty string update: ', row );
       // const inputString = "insert into FUNCTIONTEXT values (1, 'blbClose', 'Lukk', 'Close', 'Close', 'Sulje', 'Luk', 'Stäng', null, 'Schließen', 'Close', null, 'Sluiten', 'Zamknij', 'Fermer');";
       languageString = row;
       const regex = /'[^']*'|[^,()]+/g;

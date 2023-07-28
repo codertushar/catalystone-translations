@@ -38,14 +38,20 @@ function activate( context ) {
 
 		// Get the content of language.sql file and send it to the webview
 		const languageFilePath = getLanguageFilePath();
-		const data = await fs.promises.readFile( languageFilePath, 'utf8' );
+		let data = await fs.promises.readFile( languageFilePath, 'utf8' );
 		panel.webview.postMessage( { type: 'languageSqlContent', content: data } );
 
-		panel.webview.onDidReceiveMessage( ( message ) => {
+		panel.webview.onDidReceiveMessage( async ( message ) => {
 			if ( message.command === 'dataFromPanel' ) {
 				// Access the data sent from the webview
 				const dataFromPanel = message.payload;
-				searchAndModify( data, dataFromPanel, languageFilePath );
+				if(dataFromPanel.addBit) {
+					data += dataFromPanel.newString;
+					await fs.promises.writeFile( languageFilePath, data, 'utf8' );
+					vscode.window.showInformationMessage( `Successfully added new translation entry` );
+				} else {
+					searchAndModify( data, dataFromPanel, languageFilePath );
+				}
 			}
 		} );
 	} );
