@@ -10,6 +10,8 @@ Features
 -   Update existing translations with new values.
 -   Add new translation entries to the SQL file.
 -   Delete specific translation entries from the SQL file.
+-   Add new language with a single click for all the translations.
+-   Bulk action for adding translated text.
 
 Getting Started
 ---------------
