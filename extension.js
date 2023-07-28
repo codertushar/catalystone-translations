@@ -37,7 +37,7 @@ function activate( context ) {
 		panel.webview.html = content;
 
 		// Get the content of language.sql file and send it to the webview
-		const languageFilePath = getLanguageFilePath(context);
+		const languageFilePath = getLanguageFilePath();
 		const data = await fs.promises.readFile(languageFilePath, 'utf8');
 		panel.webview.postMessage({ type: 'languageSqlContent', content: data });
 
@@ -56,47 +56,12 @@ function activate( context ) {
 // This method is called when your extension is deactivated
 function deactivate() { }
 
-async function showLanguageFile() {
-	const languageFilePattern = 'Database/language.sql';
-	const languageFiles = await vscode.workspace.findFiles(languageFilePattern);
-
-	if (languageFiles.length === 0) {
-			vscode.window.showErrorMessage("No language.sql file found in the workspace.");
-			return;
-	}
-
-	// If multiple language.sql files are found, open the first one
-	const languageFilePath = languageFiles[0].fsPath;
-
-	try {
-			const data = await fs.promises.readFile(languageFilePath, 'utf8');
-
-			// Create a new webview panel
-			const panel = vscode.window.createWebviewPanel(
-					'languageSqlPanel', // Identifies the type of the webview, used internally
-					'Language SQL Table', // Title displayed in the webview
-					vscode.ViewColumn.One, // Editor column to show the webview panel
-					{}
-			);
-
-			// Send the content of the language.sql file to the webview
-			panel.webview.html = getWebviewContent(data);
-	} catch (err) {
-			vscode.window.showErrorMessage(`Error reading language.sql: ${err.message}`);
-	}
-}
-
-function getWebviewContent( context ) {
-	const content = fs.readFileSync(getWebviewPath(context), 'utf8');
-
-	return content;
-}
 
 function getWebviewPath(context) {
 	return path.join(context.extensionPath, 'webviews', 'panel.html');
 }
 
-function getLanguageFilePath(context) {
+function getLanguageFilePath() {
 	const rootPath = vscode.workspace.rootPath;
 	return path.join(rootPath, 'Database', 'language.sql');
 }
@@ -135,7 +100,6 @@ async function searchAndModify(data, dataFromPanel, languageFilePath) {
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
 
 module.exports = {
 	activate,

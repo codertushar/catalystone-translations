@@ -6,34 +6,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Webview</title>
   <style>
+    /* CSS Reset to remove default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
+    .container {
+      padding: 20px;
+      background-color: #f7f7f7;
+      border-radius: 8px;
     }
 
     .top-menu {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-bottom: 12px;
     }
 
-    button {
+    .top-menu button {
       padding: 8px 16px;
       background-color: #007ACC;
       color: #FFFFFF;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
       margin-left: 8px;
+      transition: background-color 0.3s ease;
     }
 
-    button:hover {
+    .top-menu button:hover {
       background-color: #005FA3;
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .search-container label {
+      margin-right: 8px;
+    }
+
+    .search-container input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-container button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .search-container button:hover {
+      background-color: #45a049;
     }
 
     #output {
@@ -43,11 +84,13 @@
     table {
       border-collapse: collapse;
       width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     th,
     td {
-      border: 1px solid black;
+      border: 1px solid #ccc;
       padding: 8px;
       text-align: center;
     }
@@ -55,30 +98,43 @@
     th {
       background-color: #f2f2f2;
     }
+
+    /* Dynamically generated buttons */
+    #output button {
+      padding: 8px 16px;
+      background-color: #007ACC;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      text-align: left;
+    }
+
+    #output button:hover {
+      background-color: #005FA3;
+    }
   </style>
 </head>
 
 <body>
-  <div class="top-menu">
-    <div>
+  <div class="container">
+    <div class="top-menu">
       <button id="addBtn">Add</button>
       <button id="updateBtn">Update</button>
       <button id="deleteBtn">Delete</button>
     </div>
-
-  </div>
-  <div>
-    <label for="search">Search:</label>
-    <input type="text" id="search" placeholder="Enter TextName to search">
-    <button id="searchBtn">Search</button>
-  </div>
-  <div id="output">
-    <h1>Language SQL Table</h1>
-    <div id="table-container">
-        <!-- The table content will be dynamically populated here using JavaScript -->
+    <div class="search-container">
+      <label for="search">Search:</label>
+      <input type="text" id="search" placeholder="Enter TextName to search">
+      <button id="searchBtn">Search</button>
+    </div>
+    <div id="output">
+      <h1>Language SQL Table</h1>
     </div>
   </div>
-
   <!-- Your JavaScript logic can go here or you can link an external script file -->
   <script>
     const searchInput = document.getElementById( 'search' );
@@ -137,8 +193,6 @@
         // Extract translation values for each language from the matching row
         translationValues = extractTranslations( matchingRow );
 
-        // Render input elements for each language
-        renderInputs( translationValues );
       } else {
         // If no matching row is found, display a message
         outputDiv.innerHTML = '<p>No matching entry found for the given TextName.</p>';
@@ -257,32 +311,7 @@ function escapeRegExp(str) {
         }
     }
     return rows;
-
-    // If no matching row is found, return null or undefined
-    // return null;
     }
-
-
-
-    function renderInputs( translationValues ) {
-      // Logic to render input elements for each language and pre-fill the values
-      // Implement the rendering logic here
-      // You can use DOM manipulation or template literals to create the input elements
-      // For example:
-      /*
-      const languages = Object.keys(translationValues);
-      languages.forEach((language) => {
-          const inputValue = translationValues[language];
-          const inputElement = document.createElement('input');
-          inputElement.setAttribute('type', 'text');
-          inputElement.value = inputValue;
-          outputDiv.appendChild(inputElement);
-      });
-      */
-    }
-
-    // You can also add more JavaScript logic here for handling other functionalities
-
 
     // Receive the content of language.sql from the extension
     const vscode = acquireVsCodeApi();
@@ -290,38 +319,9 @@ function escapeRegExp(str) {
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'languageSqlContent') {
                 const languageSqlContent = event.data.content;
-                window.languageSqlContent = languageSqlContent
-                // showTable(languageSqlContent);
+                window.languageSqlContent = languageSqlContent;
             }
         });
-
-        function showTable(content) {
-            const tableHtml = parseLanguageSql(content);
-            document.getElementById("table-container").innerHTML = tableHtml;
-        }
-
-        function parseLanguageSql(content) {
-            // Assuming that the language.sql file has rows in the format:
-            // insert into FUNCTIONTEXT values (..., <TextName>, <Lang1>, <Lang2>, ...);
-            const lines = content.split('\n');
-            const rows = [];
-
-            for (const line of lines) {
-                const matches = line.match(/values \(([^)]+)\);/);
-                if (matches && matches[1]) {
-                    const values = matches[1].split(',').map((value) => value.trim());
-                    rows.push(values);
-                }
-            }
-
-            const languages = rows[0].slice(2); // Extract language names from the first row (excluding <TextName> and FUNCTIONCO)
-            const tableHeaders = languages.map((lang) => `<th>${lang}</th>`).join('');
-            const tableRows = rows.slice(1) // Skip the first row (language names)
-                .map((row) => `<tr>${row.slice(2).map((value) => `<td>${value}</td>`).join('')}</tr>`)
-                .join('');
-
-            return `<table><tr>${tableHeaders}</tr>${tableRows}</table>`;
-        }
   </script>
 </body>
 
