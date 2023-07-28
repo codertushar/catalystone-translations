@@ -33,21 +33,21 @@ function activate( context ) {
 		);
 
 		// Load the HTML content into the webview panel
-		const content = fs.readFileSync(getWebviewPath(context), 'utf8');
+		const content = fs.readFileSync( getWebviewPath( context ), 'utf8' );
 		panel.webview.html = content;
 
 		// Get the content of language.sql file and send it to the webview
 		const languageFilePath = getLanguageFilePath();
-		const data = await fs.promises.readFile(languageFilePath, 'utf8');
-		panel.webview.postMessage({ type: 'languageSqlContent', content: data });
+		const data = await fs.promises.readFile( languageFilePath, 'utf8' );
+		panel.webview.postMessage( { type: 'languageSqlContent', content: data } );
 
-		panel.webview.onDidReceiveMessage((message) => {
-      if (message.command === 'dataFromPanel') {
-        // Access the data sent from the webview
-        const dataFromPanel = message.payload;
-				searchAndModify(data, dataFromPanel, languageFilePath)
-      }
-    });
+		panel.webview.onDidReceiveMessage( ( message ) => {
+			if ( message.command === 'dataFromPanel' ) {
+				// Access the data sent from the webview
+				const dataFromPanel = message.payload;
+				searchAndModify( data, dataFromPanel, languageFilePath );
+			}
+		} );
 	} );
 
 	context.subscriptions.push( disposable );
@@ -57,48 +57,48 @@ function activate( context ) {
 function deactivate() { }
 
 
-function getWebviewPath(context) {
-	return path.join(context.extensionPath, 'webviews', 'panel.html');
+function getWebviewPath( context ) {
+	return path.join( context.extensionPath, 'webviews', 'panel.html' );
 }
 
 function getLanguageFilePath() {
 	const rootPath = vscode.workspace.rootPath;
-	return path.join(rootPath, 'Database', 'language.sql');
+	return path.join( rootPath, 'Database', 'language.sql' );
 }
 
-async function searchAndModify(data, dataFromPanel, languageFilePath) {
-	const sqlStatements = data.match(/insert into FUNCTIONTEXT.*?;/g);
-    // Read the content of the language.sql file
-    try {
-        // Find the matching row based on <TextName> and modify it in place
-        let modifiedContent  = '';
-        let isModified = false;
-        for (const sqlStatement of sqlStatements) {
-            if (sqlStatement.includes(dataFromPanel.oldString)) {
-                // Modify the row here based on your requirements
-                // For example, you can extract and modify the translation values
+async function searchAndModify( data, dataFromPanel, languageFilePath ) {
+	const sqlStatements = data.match( /insert into FUNCTIONTEXT.*?;/g );
+	// Read the content of the language.sql file
+	try {
+		// Find the matching row based on <TextName> and modify it in place
+		let modifiedContent = '';
+		let isModified = false;
+		for ( const sqlStatement of sqlStatements ) {
+			if ( sqlStatement.includes( dataFromPanel.oldString ) ) {
+				// Modify the row here based on your requirements
+				// For example, you can extract and modify the translation values
 
-                const modifiedStatement = data.replace(new RegExp(escapeRegExp(dataFromPanel.oldString), 'g'),dataFromPanel.newString);
-								modifiedContent += modifiedStatement;
-                isModified = true;
-            }
-        }
+				const modifiedStatement = data.replace( new RegExp( escapeRegExp( dataFromPanel.oldString ), 'g' ), dataFromPanel.newString );
+				modifiedContent += modifiedStatement;
+				isModified = true;
+			}
+		}
 
-        if (!isModified) {
-            vscode.window.showInformationMessage(`No entry found for the given <TextName>: `);
-            return;
-        }
+		if ( !isModified ) {
+			vscode.window.showInformationMessage( `No entry found for the given <TextName>: ` );
+			return;
+		}
 
-        // Write the modified content back to the language.sql file
-        await fs.promises.writeFile(languageFilePath, modifiedContent, 'utf8');
-        vscode.window.showInformationMessage(`Successfully modified entries with <TextName>: `);
-    } catch (err) {
-        vscode.window.showErrorMessage(`Error reading or modifying language.sql: ${err.message}`);
-    }
+		// Write the modified content back to the language.sql file
+		await fs.promises.writeFile( languageFilePath, modifiedContent, 'utf8' );
+		vscode.window.showInformationMessage( `Successfully modified entries with <TextName>: ` );
+	} catch ( err ) {
+		vscode.window.showErrorMessage( `Error reading or modifying language.sql: ${err.message}` );
+	}
 }
 
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function escapeRegExp( string ) {
+	return string.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
 }
 
 module.exports = {
