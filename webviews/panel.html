@@ -126,9 +126,7 @@
 <body>
   <div class="container">
     <div class="top-menu">
-      <button id="addBtn">Add</button>
-      <button id="updateBtn">Update</button>
-      <button id="deleteBtn">Delete</button>
+      <button id="addBtn">Add New Query</button>
     </div>
     <div class="search-container">
       <label for="search">Search:</label>
@@ -138,6 +136,8 @@
     <div id="output">
       <h1>Language SQL Table</h1>
     </div>
+    <button style="display: none;" id="updateBtn">Update Query</button>
+
   </div>
   <!-- Your JavaScript logic can go here or you can link an external script file -->
   <script>
@@ -145,7 +145,6 @@
     const searchBtn = document.getElementById( 'searchBtn' );
     const addBtn = document.getElementById( 'addBtn' );
     const updateBtn = document.getElementById( 'updateBtn' );
-    const deleteBtn = document.getElementById( 'deleteBtn' );
     const outputDiv = document.getElementById( 'output' );
     let sqlLanguageStatements = null;
 
@@ -165,11 +164,6 @@
       console.log( 'updatebtn clicked', keyValuePairs );
       console.log( 'new updatebtn clicked', newKeyValuePairs );
       updateInputString( keyValuePairs );
-    } );
-
-    // Add event listener to the Delete button
-    deleteBtn.addEventListener( 'click', () => {
-      // Logic to handle deleting entry based on the <TextName> value
     } );
 
     // Add event listener to the Search button
@@ -200,6 +194,8 @@
       } else {
         // If no matching row is found, display a message
         outputDiv.innerHTML = '<p>No matching entry found for the given TextName.</p>';
+        updateBtn.style.display = "none";
+
       }
 
     } );
@@ -216,6 +212,7 @@
         }
       }
       outputDiv.innerHTML = content;
+      updateBtn.style.display = "block";
     }
 
     function escapeRegExp( str ) {
@@ -233,9 +230,15 @@
           keyValuePairs[newKey] = newKeyValuePairs[newKey];
         }
       }
-      console.log( "combine keyValuePairs:", keyValuePairs );
+      for (const key in keyValuePairs) {
+          if (keyValuePairs.hasOwnProperty(key)) {
+              if (keyValuePairs[key] === '') {
+                keyValuePairs[key] = null;
+              }
+          }
+      }
 
-
+    console.log("combine keyValuePairs:", keyValuePairs);
       for ( const key in keyValuePairs ) {
         if ( keyValuePairs.hasOwnProperty( key ) ) {
           const value = keyValuePairs[key];
@@ -248,10 +251,10 @@
       // Update the inputString with the new values
       const updatedValues = Object.values( keyValuePairs );
 
-      console.log( "Updated languageString:", updatedInputString );
-      writeInFile( languageString, updatedInputString );
-    }
 
+      console.log("Updated languageString:", updatedInputString);
+      writeInFile(languageString,updatedInputString, 0);
+  }
     function updateKeyValuePair( key, value ) {
       newKeyValuePairs[key] = value;
     }
@@ -260,18 +263,21 @@
       return str.replace( /'/g, "\\'" ).replace( /"/g, '\\"' );
     }
 
-    function writeInFile( oldString, newString ) {
-      console.log( 'oldString ', oldString );
-      console.log( 'newString ', newString );
-      vscode.postMessage( {
+
+ function writeInFile(oldString, newString, addBit){
+  console.log('oldString ', oldString);
+  console.log('newString ', newString);
+  vscode.postMessage({
         command: 'dataFromPanel',
-        payload: { oldString, newString },
-      } );
-      const updatedSqlLanguageStatements = sqlLanguageStatements.map( ( sqlLanguageStatements ) => ( sqlLanguageStatements === oldString ? newString : sqlLanguageStatements ) );
-      outputDiv.innerHTML = `Translation update successfully`;
-    }
-    function extractTranslations( row ) {
-      console.log( 'empty string update: ', row );
+        payload: {oldString, newString, addBit},
+      });
+  const updatedSqlLanguageStatements = sqlLanguageStatements.map((sqlLanguageStatements) => (sqlLanguageStatements === oldString ? newString : sqlLanguageStatements));
+  outputDiv.innerHTML = `Translation updated successfully`;
+  updateBtn.style.display = "none";
+
+ }
+    function extractTranslations(row) {
+      console.log('empty string update: ', row);
       // const inputString = "insert into FUNCTIONTEXT values (1, 'blbClose', 'Lukk', 'Close', 'Close', 'Sulje', 'Luk', 'Stäng', null, 'Schließen', 'Close', null, 'Sluiten', 'Zamknij', 'Fermer');";
       languageString = row;
       const regex = /'[^']*'|[^,()]+/g;
