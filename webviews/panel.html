@@ -62,7 +62,7 @@
       border-radius: 4px;
     }
 
-    .search-container button {
+    .search-container button, #updateBtn {
       padding: 8px 16px;
       background-color: #4CAF50;
       color: #FFFFFF;
@@ -73,7 +73,7 @@
       transition: background-color 0.3s ease;
     }
 
-    .search-container button:hover {
+    .search-container button:hover, #updateBtn:hover {
       background-color: #45a049;
     }
 
@@ -125,16 +125,17 @@
 
 <body>
   <div class="container">
+    <h1>CO LangXpert</h1>
     <div class="top-menu">
-      <button id="addBtn">Add New Query</button>
+      <button id="addBtn">Add New</button>
     </div>
     <div class="search-container">
       <label for="search">Search:</label>
-      <input type="text" id="search" placeholder="Enter TextName to search">
+      <input type="text" id="search" placeholder="Enter text for searching">
       <button id="searchBtn">Search</button>
     </div>
     <div id="output">
-      <h1>Language SQL Table</h1>
+      
     </div>
     <button style="display: none;" id="updateBtn">Update Query</button>
 
@@ -146,7 +147,7 @@
     const addBtn = document.getElementById( 'addBtn' );
     const updateBtn = document.getElementById( 'updateBtn' );
     const outputDiv = document.getElementById( 'output' );
-    let sqlLanguageStatements = null;
+    let sqlLanguageStatements ;
 
     let keyValuePairs = {};
     let newKeyValuePairs = {};
@@ -188,12 +189,10 @@
           console.log( 'single ', matchingRow );
           extractTranslations( matchingRow );
         }
-        // Extract translation values for each language from the matching row
-        translationValues = extractTranslations( matchingRow );
-
       } else {
         // If no matching row is found, display a message
-        outputDiv.innerHTML = '<p>No matching entry found for the given TextName.</p>';
+        outputDiv.innerHTML = '<p>No matching entry found for the given text.</p>';
+        searchInput.value = '';
         updateBtn.style.display = "none";
 
       }
@@ -212,6 +211,11 @@
         }
       }
       outputDiv.innerHTML = content;
+      if(languageString === ''){
+        updateBtn.innerText = 'Add';
+      }else{
+        updateBtn.innerText = 'Update';
+      }
       updateBtn.style.display = "block";
     }
 
@@ -253,7 +257,7 @@
 
 
       console.log( "Updated languageString:", updatedInputString );
-      writeInFile( languageString, updatedInputString, 0 );
+      writeInFile( languageString, updatedInputString);
     }
     function updateKeyValuePair( key, value ) {
       newKeyValuePairs[key] = value;
@@ -264,14 +268,16 @@
     }
 
 
-    function writeInFile( oldString, newString, addBit ) {
-      vscode.postMessage( {
+ function writeInFile(oldString, newString){
+  addBit = (oldString === '') ? 1 : 0;
+  vscode.postMessage({
         command: 'dataFromPanel',
         payload: { oldString, newString, addBit },
       } );
       sqlLanguageStatements = window.languageSqlContent.match( /insert into FUNCTIONTEXT.*?;/g );
       const updatedSqlLanguageStatements = sqlLanguageStatements.map( ( sqlLanguageStatements ) => ( sqlLanguageStatements === oldString ? newString : sqlLanguageStatements ) );
       outputDiv.innerHTML = `Translation updated successfully`;
+      searchInput.value = '';
       updateBtn.style.display = "none";
 
     }
@@ -296,30 +302,35 @@
         resultRows += `<button id="${index}" onclick="extractTranslations('${escapeQuotes( row )}')">${row} </button><br>`;
       }
       outputDiv.innerHTML = resultRows;
+      updateBtn.style.display = "none";
     }
     function findMatchingRows( searchText ) {
       // Assuming sqlStatements is an array of SQL statements (rows) from the language.sql file
       // Each SQL statement is represented as an array of values
+      if(searchText != '') {
+        const sqlStatements = window.languageSqlContent.match( /insert into FUNCTIONTEXT.*?;/g );
+        sqlLanguageStatements = sqlStatements;
+        const rows = [];
+        // Iterate through each SQL statement (row) in the sqlStatements array
+        for ( const row of sqlStatements ) {
+          if ( row.includes( searchText ) ) {
+            const rowValues = row.split( ',' );
+            // Assuming the <TextName> is at index 1 in the row array
+            const textName = rowValues[1];
+            // Convert the searchText to lowercase and remove spaces and quotes
+            const processedSearchText = textName.toLowerCase().replace( /[\s'"]/g, '' );
 
-      const sqlStatements = window.languageSqlContent.match( /insert into FUNCTIONTEXT.*?;/g );
-      sqlLanguageStatements = sqlStatements;
-      const rows = [];
-      // Iterate through each SQL statement (row) in the sqlStatements array
-      for ( const row of sqlStatements ) {
-        if ( row.includes( searchText ) ) {
-          const rowValues = row.split( ',' );
-          // Assuming the <TextName> is at index 1 in the row array
-          const textName = rowValues[1];
-          // Convert the searchText to lowercase and remove spaces and quotes
-          const processedSearchText = textName.toLowerCase().replace( /[\s'"]/g, '' );
-
-          // Compare the <TextName> with the searchText (case-insensitive)
-          if ( processedSearchText && processedSearchText.toLowerCase() === searchText.trim().toLowerCase() ) {
-            rows.push( row );
+            // Compare the <TextName> with the searchText (case-insensitive)
+            if ( processedSearchText && processedSearchText.toLowerCase() === searchText.trim().toLowerCase() ) {
+              rows.push( row );
+            }
           }
         }
+        return rows;
+      }else{
+
       }
-      return rows;
+      
     }
 
     // Receive the content of language.sql from the extension
